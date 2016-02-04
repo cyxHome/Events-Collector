@@ -11,7 +11,7 @@ def retieveEvents():
     briefs = soup.select("div.item.event_item.vevent")
 
     # retieve all the events detail pages url.
-    print 'collecting', len(briefs), 'events ...'
+    print 'collecting', len(briefs), 'events from', url
     count = len(briefs)
     toVisit = []
     for brief in briefs:
@@ -21,7 +21,6 @@ def retieveEvents():
 
     # get information from each events detail pages.
     for item in toVisit:
-        print str(count), 'events left ...'
         tmp = {}
         url = item
         html = urllib.urlopen(url).read()
@@ -55,9 +54,12 @@ def retieveEvents():
         tmp['location'] = location
         tmp['description'] = description
         tmp['image'] = image
-        print tmp
+        print 'retrieved:', tmp['title']
         result.append(tmp)
         count = count - 1
 
     # return all events dicitionary in an array.
     return result
+
+if __name__ == '__main__':
+    print retieveEvents()

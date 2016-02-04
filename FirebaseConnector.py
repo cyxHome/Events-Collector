@@ -1,0 +1,172 @@
+from firebase import firebase
+import random
+import EventsCollector
+
+
+firebase_url = 'https://event-finder-test.firebaseio.com'
+
+robot_data = {}
+robot_data['age'] = 100
+robot_data['gender'] = 'female'
+robot_data['interest'] = ['None'],
+robot_data['myAttendanceNumber'] = 0
+robot_data['myPostsNumber'] = 0
+robot_data['nickname'] = 'robot'
+robot_data['password'] = 'robot'
+robot_data['username'] = 'python crawler'
+robot_data['usrProfileImage'] = ''
+robot_data['whatsup'] = 'nothing up'
+
+data_mask = 10000
+location_mask = 100000
+mock_data = {}
+mock_data['ending_time'] = 201602011510 + random.randint(1, 29) * data_mask
+mock_data['starting_time'] = mock_data['ending_time'] - data_mask
+mock_data['lat_of_event'] = 42.4492631 + random.randint(-9, 9) / location_mask
+mock_data['lng_of_event'] = -76.482052899 + random.randint(-9, 9) / location_mask
+mock_data['post_time'] = 201602011310 + random.randint(0, 30) * data_mask
+mock_data['primary_tag'] = 'Social Events'
+mock_data['restriction'] = 'None'
+mock_data['secondary_tag'] = ['Cornell Sponsored']
+
+
+def createUser(robot_data, firebase_url):
+	from firebase import firebase
+	firebase = firebase.FirebaseApplication(firebase_url, None)
+	users = firebase.get('/users', None)
+
+	username_has_been_created = False
+	if users is not None and len(users) > 0:
+		for user in users.values():
+			if user['username'] == robot_data['username']:
+				username_has_been_created = True
+				break
+
+	# create a robot user if has not been created yet. 
+	if username_has_been_created == False:
+		print "creating robot user:", robot_data['username']
+		usr_data = {
+			'age': robot_data['age'],
+			'gender': robot_data['gender'],
+			'interest': robot_data['interest'], 
+			'myAttendanceNumber': robot_data['myAttendanceNumber'],
+			'myPostsNumber': robot_data['myPostsNumber'],
+			'nickname': robot_data['nickname'],
+			'password': robot_data['password'],
+			'username': robot_data['username'],
+			'usrProfileImage': robot_data['usrProfileImage'],
+			'whatsup': robot_data['whatsup']
+		}
+		post_user = firebase.post('/users', usr_data)
+		print post_user
+
+	return robot_data
+
+
+def postEvents(robot_data, firebase_url):
+	from firebase import firebase
+	firebase = firebase.FirebaseApplication(firebase_url, None)
+
+	createUser(robot_data, firebase_url)
+	retrievedData = EventsCollector.retieveEvents()
+
+	for i in range(len(retrievedData)):
+		tmp = retrievedData[i]
+		event_data = {}
+		event_data['authorName'] = robot_data['username']
+		event_data['authorProfileImg'] = robot_data['usrProfileImage']
+		event_data['endingTime'] = mock_data['ending_time']
+		event_data['imageOfEvent'] = [str([tmp['image']][0])]
+		event_data['introOfEvent'] = tmp['description']
+		event_data['latOfEvent'] = mock_data['lat_of_event']
+		event_data['lngOfEvent'] = mock_data['lng_of_event']
+		event_data['locationOfEvent'] = tmp['location']
+		event_data['nameOfEvent'] = tmp['title']
+		event_data['numberOfViewed'] = 0
+		event_data['postTime'] = mock_data['post_time']
+		event_data['primaryTag'] = mock_data['primary_tag']
+		event_data['restriction'] = mock_data['restriction']
+		event_data['secondaryTag'] = mock_data['secondary_tag']
+		event_data['startingTime'] = mock_data['starting_time']
+		
+		post_event = firebase.post('/events', event_data)
+		print 'posted:', post_event
+	# result = firebase.post('/users', {'this': 'is'})
+
+def threaded_function(stop_event):
+	from time import sleep
+	while (not stop_event.is_set()):
+		sleep(3)
+		print '.'
+
+def removeRobotPostEvents(firebase_url, robot_name):
+	
+	import threading
+	from firebase import firebase
+
+	print 'fetching events from the database ... '
+	stop_event= threading.Event()
+	thread = threading.Thread(target = threaded_function, args = [stop_event])
+	thread.start()
+    
+	firebase = firebase.FirebaseApplication(firebase_url, None)
+	events = firebase.get('/events', None)
+	robot_event_list_key = []
+	for key in events:
+		if events[key]['authorName'] == robot_name:
+			robot_event_list_key.append(key)
+	print 'set'
+
+	stop_event.set()
+
+	print "robot had posted", len(robot_event_list_key), "events"
+	print "How many events you want to delete today?"
+	num = input("Number: ")
+	print "Are you sure you want to delete " + str(num) + " events?"
+	yes_or_no = raw_input("Y/N: ")
+	if yes_or_no == "Y":
+		for i in range(min(num, len(robot_event_list_key))):
+			firebase.delete('/events', robot_event_list_key[i])
+			print 'deleted', i, 'events'
+
+	print "DONE"
+
+
+def randomRemovePostEvents():
+	print 'fetching events from the database ... '
+	from firebase import firebase
+	firebase = firebase.FirebaseApplication(firebase_url, None)
+	events = firebase.get('/events', None)
+
+	print "found", len(events), "events"
+	print "How many events you want to delete today?"
+	num = input("Number: ")
+	print "Are you sure you want to delete last " + str(num) + " events?"
+	yes_or_no = raw_input("Y/N: ")
+	if yes_or_no == "Y":
+		events_number = len(events)
+		for i in range(events_number-num, events_number-1):
+			firebase.delete('/events', events.keys()[i])
+
+	print "DONE"
+
+if __name__ == '__main__':
+	print "Welcome to use this crawler to add events to CU Event Finder"
+	print "-------------------------------------------------------"
+	print "What would you like to do?"
+	print "input 1 to add events"
+	print "input 2 to delete events"
+	print "input 0 to exit"
+	num = input("Your choice: ")
+	if num == 0:
+		quit()
+	elif num == 1:
+		postEvents(robot_data, firebase_url)
+	elif num == 2:
+		removeRobotPostEvents(firebase_url, robot_data['username'])
+
+
+
+
+
+
