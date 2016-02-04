@@ -18,16 +18,21 @@ robot_data['usrProfileImage'] = ''
 robot_data['whatsup'] = 'nothing up'
 
 data_mask = 10000
-location_mask = 100000
+lat_lower_bound = 42.442454
+lat_upper_bound = 42.455479
+lng_lower_bound = -76.487715
+lng_upper_bound = -76.462526
 mock_data = {}
-mock_data['ending_time'] = 201602011510 + random.randint(1, 29) * data_mask
-mock_data['starting_time'] = mock_data['ending_time'] - data_mask
-mock_data['lat_of_event'] = 42.4492631 + random.randint(-9, 9) / location_mask
-mock_data['lng_of_event'] = -76.482052899 + random.randint(-9, 9) / location_mask
-mock_data['post_time'] = 201602011310 + random.randint(0, 30) * data_mask
-mock_data['primary_tag'] = 'Social Events'
+mock_data['data_mask'] = data_mask
+mock_data['lat_lower_bound'] = lat_lower_bound
+mock_data['lat_upper_bound'] = lat_upper_bound
+mock_data['lng_lower_bound'] = lng_lower_bound
+mock_data['lng_upper_bound'] = lng_upper_bound
 mock_data['restriction'] = 'None'
 mock_data['secondary_tag'] = ['Cornell Sponsored']
+
+tags_list = ["Professional Events", "Social Events", "Performance Events",
+             "Political Events", "Seminars", "Athletics"]
 
 
 def createUser(robot_data, firebase_url):
@@ -63,7 +68,7 @@ def createUser(robot_data, firebase_url):
 	return robot_data
 
 
-def postEvents(robot_data, firebase_url):
+def postEvents(robot_data, firebase_url, tags_list):
 	from firebase import firebase
 	firebase = firebase.FirebaseApplication(firebase_url, None)
 
@@ -75,19 +80,21 @@ def postEvents(robot_data, firebase_url):
 		event_data = {}
 		event_data['authorName'] = robot_data['username']
 		event_data['authorProfileImg'] = robot_data['usrProfileImage']
-		event_data['endingTime'] = mock_data['ending_time']
+		event_data['endingTime'] = 201602011510 + random.randint(1, 29) * mock_data['data_mask']
 		event_data['imageOfEvent'] = [str([tmp['image']][0])]
 		event_data['introOfEvent'] = tmp['description']
-		event_data['latOfEvent'] = mock_data['lat_of_event']
-		event_data['lngOfEvent'] = mock_data['lng_of_event']
+		event_data['latOfEvent'] = random.uniform(mock_data['lat_lower_bound'], 
+			                                      mock_data['lat_upper_bound'])
+		event_data['lngOfEvent'] = random.uniform(mock_data['lng_lower_bound'], 
+			                                      mock_data['lng_upper_bound'])
 		event_data['locationOfEvent'] = tmp['location']
 		event_data['nameOfEvent'] = tmp['title']
 		event_data['numberOfViewed'] = 0
-		event_data['postTime'] = mock_data['post_time']
-		event_data['primaryTag'] = mock_data['primary_tag']
+		event_data['postTime'] = 201602011310 + random.randint(0, 30) * mock_data['data_mask']
+		event_data['primaryTag'] = tags_list[random.randint(0, 5)]
 		event_data['restriction'] = mock_data['restriction']
 		event_data['secondaryTag'] = mock_data['secondary_tag']
-		event_data['startingTime'] = mock_data['starting_time']
+		event_data['startingTime'] = event_data['endingTime'] - mock_data['data_mask']
 		
 		post_event = firebase.post('/events', event_data)
 		print 'posted:', post_event
@@ -115,7 +122,6 @@ def removeRobotPostEvents(firebase_url, robot_name):
 	for key in events:
 		if events[key]['authorName'] == robot_name:
 			robot_event_list_key.append(key)
-	print 'set'
 
 	stop_event.set()
 
@@ -161,7 +167,7 @@ if __name__ == '__main__':
 	if num == 0:
 		quit()
 	elif num == 1:
-		postEvents(robot_data, firebase_url)
+		postEvents(robot_data, firebase_url, tags_list)
 	elif num == 2:
 		removeRobotPostEvents(firebase_url, robot_data['username'])
 
