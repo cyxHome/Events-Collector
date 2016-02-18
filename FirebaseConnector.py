@@ -64,7 +64,6 @@ def createUser(robot_data, firebase_url):
 		}
 		post_user = firebase.post('/users', usr_data)
 		print post_user
-
 	return robot_data
 
 
@@ -98,7 +97,10 @@ def postEvents(robot_data, firebase_url, tags_list):
 		
 		post_event = firebase.post('/events', event_data)
 		print 'posted:', post_event
-	# result = firebase.post('/users', {'this': 'is'})
+	print "DONE"
+	print "\n"
+	print "\n"
+	print "\n"
 
 def threaded_function(stop_event):
 	from time import sleep
@@ -119,6 +121,16 @@ def removeRobotPostEvents(firebase_url, robot_name):
 	firebase = firebase.FirebaseApplication(firebase_url, None)
 	events = firebase.get('/events', None)
 	robot_event_list_key = []
+
+	if events == None:
+		stop_event.set()
+		print "There is no events in the database."
+		print "\n"
+		print "\n"
+		print "\n"
+		return
+
+
 	for key in events:
 		if events[key]['authorName'] == robot_name:
 			robot_event_list_key.append(key)
@@ -136,6 +148,9 @@ def removeRobotPostEvents(firebase_url, robot_name):
 			print 'deleted', i, 'events'
 
 	print "DONE"
+	print "\n"
+	print "\n"
+	print "\n"
 
 
 def removeAllPostEvents():
@@ -144,34 +159,45 @@ def removeAllPostEvents():
 	firebase = firebase.FirebaseApplication(firebase_url, None)
 	events = firebase.get('/events', None)
 
+	if events == None:
+		print "There is no events in the database."
+		print "\n"
+		print "\n"
+		print "\n"
+		return
+
 	print "found", len(events), "events"
 	print "Do you want to remove them all?"
 	num = len(events)
 	print "Are you sure you want to delete all " + str(num) + " events?"
 	yes_or_no = raw_input("Y/N: ")
 	if yes_or_no == "Y":
-		for i in range(0, num):
+		for i in range(num):
 			firebase.delete('/events', events.keys()[i])
 
 	print "DONE"
+	print "\n"
+	print "\n"
+	print "\n"
 
 if __name__ == '__main__':
-	print "Welcome to use this crawler to add events to CU Event Finder"
-	print "-------------------------------------------------------"
-	print "What would you like to do?"
-	print "input 1 to add events"
-	print "input 2 to delete events"
-	print "input 3 to remove all the events"
-	print "input 0 to exit"
-	num = input("Your choice: ")
-	if num == 0:
-		quit()
-	elif num == 1:
-		postEvents(robot_data, firebase_url, tags_list)
-	elif num == 2:
-		removeRobotPostEvents(firebase_url, robot_data['username'])
-	elif num == 3:
-		removeAllPostEvents()
+	while True:
+		print "Welcome to use this crawler to add events to CU Event Finder"
+		print "-------------------------------------------------------"
+		print "What would you like to do?"
+		print "input 1 to add events"
+		print "input 2 to delete events"
+		print "input 3 to remove all the events"
+		print "input 0 to exit"
+		num = input("Your choice: ")
+		if num == 0:
+			quit()
+		elif num == 1:
+			postEvents(robot_data, firebase_url, tags_list)
+		elif num == 2:
+			removeRobotPostEvents(firebase_url, robot_data['username'])
+		elif num == 3:
+			removeAllPostEvents()
 
 
 
