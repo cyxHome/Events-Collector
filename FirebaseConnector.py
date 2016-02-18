@@ -74,8 +74,13 @@ def postEvents(robot_data, firebase_url, tags_list):
 	createUser(robot_data, firebase_url)
 	retrievedData = EventsCollector.retieveEvents()
 
+	nameSet = []
+
 	for i in range(len(retrievedData)):
 		tmp = retrievedData[i]
+		if tmp['title'] in nameSet:
+			continue
+		nameSet.append(tmp['title'])
 		event_data = {}
 		event_data['authorName'] = robot_data['username']
 		event_data['authorProfileImg'] = robot_data['usrProfileImage']
@@ -174,6 +179,7 @@ def removeAllPostEvents():
 	if yes_or_no == "Y":
 		for i in range(num):
 			firebase.delete('/events', events.keys()[i])
+			print 'deleted', i, 'events'
 
 	print "DONE"
 	print "\n"
