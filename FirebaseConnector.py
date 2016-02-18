@@ -138,20 +138,19 @@ def removeRobotPostEvents(firebase_url, robot_name):
 	print "DONE"
 
 
-def randomRemovePostEvents():
+def removeAllPostEvents():
 	print 'fetching events from the database ... '
 	from firebase import firebase
 	firebase = firebase.FirebaseApplication(firebase_url, None)
 	events = firebase.get('/events', None)
 
 	print "found", len(events), "events"
-	print "How many events you want to delete today?"
-	num = input("Number: ")
-	print "Are you sure you want to delete last " + str(num) + " events?"
+	print "Do you want to remove them all?"
+	num = len(events)
+	print "Are you sure you want to delete all " + str(num) + " events?"
 	yes_or_no = raw_input("Y/N: ")
 	if yes_or_no == "Y":
-		events_number = len(events)
-		for i in range(events_number-num, events_number-1):
+		for i in range(0, num):
 			firebase.delete('/events', events.keys()[i])
 
 	print "DONE"
@@ -162,6 +161,7 @@ if __name__ == '__main__':
 	print "What would you like to do?"
 	print "input 1 to add events"
 	print "input 2 to delete events"
+	print "input 3 to remove all the events"
 	print "input 0 to exit"
 	num = input("Your choice: ")
 	if num == 0:
@@ -170,6 +170,8 @@ if __name__ == '__main__':
 		postEvents(robot_data, firebase_url, tags_list)
 	elif num == 2:
 		removeRobotPostEvents(firebase_url, robot_data['username'])
+	elif num == 3:
+		removeAllPostEvents()
 
 
 
