@@ -1,33 +1,11 @@
 from firebase import firebase
 import random
 import EventsCollector
-
-
-firebase_url = 'https://event-finder-test.firebaseio.com'
-
-robot_data = {}
-robot_data['age'] = 100
-robot_data['gender'] = 'female'
-robot_data['interest'] = ['None'],
-robot_data['myAttendanceNumber'] = 0
-robot_data['myPostsNumber'] = 0
-robot_data['nickname'] = 'robot'
-robot_data['password'] = 'robot'
-robot_data['username'] = 'python crawler'
-robot_data['usrProfileImage'] = ''
-robot_data['whatsup'] = 'nothing up'
+import Preprocess
 
 data_mask = 10000
-lat_lower_bound = 42.442454
-lat_upper_bound = 42.455479
-lng_lower_bound = -76.487715
-lng_upper_bound = -76.462526
 mock_data = {}
 mock_data['data_mask'] = data_mask
-mock_data['lat_lower_bound'] = lat_lower_bound
-mock_data['lat_upper_bound'] = lat_upper_bound
-mock_data['lng_lower_bound'] = lng_lower_bound
-mock_data['lng_upper_bound'] = lng_upper_bound
 mock_data['restriction'] = 'None'
 mock_data['secondary_tag'] = ['Cornell Sponsored']
 
@@ -87,10 +65,9 @@ def postEvents(robot_data, firebase_url, tags_list):
 		event_data['endingTime'] = 201602011510 + random.randint(1, 29) * mock_data['data_mask']
 		event_data['imageOfEvent'] = [str([tmp['image']][0])]
 		event_data['introOfEvent'] = tmp['description']
-		event_data['latOfEvent'] = random.uniform(mock_data['lat_lower_bound'], 
-			                                      mock_data['lat_upper_bound'])
-		event_data['lngOfEvent'] = random.uniform(mock_data['lng_lower_bound'], 
-			                                      mock_data['lng_upper_bound'])
+		latlng = Preprocess.decodeAddressToCoordinatesIthaca(tmp['location'])
+		event_data['latOfEvent'] = latlng['lat']
+		event_data['lngOfEvent'] = latlng['lng']
 		event_data['locationOfEvent'] = tmp['location']
 		event_data['nameOfEvent'] = tmp['title']
 		event_data['numberOfViewed'] = 0
@@ -185,28 +162,4 @@ def removeAllPostEvents():
 	print "\n"
 	print "\n"
 	print "\n"
-
-if __name__ == '__main__':
-	while True:
-		print "Welcome to use this crawler to add events to CU Event Finder"
-		print "-------------------------------------------------------"
-		print "What would you like to do?"
-		print "input 1 to add events"
-		print "input 2 to delete events"
-		print "input 3 to remove all the events"
-		print "input 0 to exit"
-		num = input("Your choice: ")
-		if num == 0:
-			quit()
-		elif num == 1:
-			postEvents(robot_data, firebase_url, tags_list)
-		elif num == 2:
-			removeRobotPostEvents(firebase_url, robot_data['username'])
-		elif num == 3:
-			removeAllPostEvents()
-
-
-
-
-
 
