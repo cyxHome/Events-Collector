@@ -5,14 +5,17 @@ firebase_url = 'https://event-finder-test.firebaseio.com'
 robot_data = {}
 robot_data['age'] = 100
 robot_data['gender'] = 'female'
-robot_data['interest'] = ['None'],
+robot_data['interest'] = ['None']
 robot_data['myAttendanceNumber'] = 0
 robot_data['myPostsNumber'] = 0
 robot_data['nickname'] = 'robot'
 robot_data['password'] = 'robot'
-robot_data['username'] = 'python crawler'
-robot_data['usrProfileImage'] = ''
+robot_data['username'] = "events.cornell.edu"
+robot_data['usrProfileImage'] = "http://res.cloudinary.com/dfrmapatz/image/upload/v1462726092/cornell_logo_ibigsc.png"
 robot_data['whatsup'] = 'nothing up'
+
+tags_list = ["Professional Events", "Social Events", "Performance Events",
+             "Political Events", "Seminars", "Athletics"]
 
 if __name__ == '__main__':
 	while True:
@@ -31,4 +34,4 @@ if __name__ == '__main__':
 		elif num == 2:
 			FirebaseConnector.removeRobotPostEvents(firebase_url, robot_data['username'])
 		elif num == 3:
-			FirebaseConnector.removeAllPostEvents()
+			FirebaseConnector.removeAllPostEvents(firebase_url)

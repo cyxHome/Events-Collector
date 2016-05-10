@@ -2,16 +2,7 @@ from firebase import firebase
 import random
 import EventsCollector
 import Preprocess
-
-data_mask = 10000
-mock_data = {}
-mock_data['data_mask'] = data_mask
-mock_data['restriction'] = 'None'
-mock_data['secondary_tag'] = ['Cornell Sponsored']
-
-tags_list = ["Professional Events", "Social Events", "Performance Events",
-             "Political Events", "Seminars", "Athletics"]
-
+import KeywordsClassifier
 
 def createUser(robot_data, firebase_url):
 	from firebase import firebase
@@ -50,35 +41,45 @@ def postEvents(robot_data, firebase_url, tags_list):
 	firebase = firebase.FirebaseApplication(firebase_url, None)
 
 	createUser(robot_data, firebase_url)
-	retrievedData = EventsCollector.retieveEvents()
-
+	month = 5
 	nameSet = []
-
-	for i in range(len(retrievedData)):
-		tmp = retrievedData[i]
-		if tmp['title'] in nameSet:
-			continue
-		nameSet.append(tmp['title'])
-		event_data = {}
-		event_data['authorName'] = robot_data['username']
-		event_data['authorProfileImg'] = robot_data['usrProfileImage']
-		event_data['endingTime'] = 201602011510 + random.randint(1, 29) * mock_data['data_mask']
-		event_data['imageOfEvent'] = [str([tmp['image']][0])]
-		event_data['introOfEvent'] = tmp['description']
-		latlng = Preprocess.decodeAddressToCoordinatesIthaca(tmp['location'])
-		event_data['latOfEvent'] = latlng['lat']
-		event_data['lngOfEvent'] = latlng['lng']
-		event_data['locationOfEvent'] = tmp['location']
-		event_data['nameOfEvent'] = tmp['title']
-		event_data['numberOfViewed'] = 0
-		event_data['postTime'] = 201602011310 + random.randint(0, 30) * mock_data['data_mask']
-		event_data['primaryTag'] = tags_list[random.randint(0, 5)]
-		event_data['restriction'] = mock_data['restriction']
-		event_data['secondaryTag'] = mock_data['secondary_tag']
-		event_data['startingTime'] = event_data['endingTime'] - mock_data['data_mask']
+	for day in range(8, 15):
+		url = 'https://events.cornell.edu/calendar/day/2016/%s/%s' % (str(month), str(day)) 
+		date = 20160000 + month*100 + day 
+		retrievedData = EventsCollector.retieveEventsAtDate(date, url)
 		
-		post_event = firebase.post('/events', event_data)
-		print 'posted:', post_event
+
+		for i in range(len(retrievedData)):
+			tmp = retrievedData[i]
+			if tmp['title'] in nameSet:
+				continue
+			nameSet.append(tmp['title'])
+			event_data = {}
+			event_data['authorName'] = robot_data['username']
+			event_data['authorProfileImg'] =  robot_data['usrProfileImage']
+			event_data['startingTime'] = tmp['time'][0]
+			event_data['endingTime'] = tmp['time'][1]
+			event_data['imageOfEvent'] = [str([tmp['image']][0])]
+			event_data['introOfEvent'] = tmp['description']
+			event_data['latOfEvent'] = tmp['lat']
+			event_data['lngOfEvent'] = tmp['lng']
+			event_data['locationOfEvent'] = tmp['location']
+			event_data['nameOfEvent'] = tmp['title']
+			event_data['numberOfViewed'] = 0
+
+			import datetime
+			now = datetime.datetime.now()
+			post_time = now.date().year * 10000 + now.date().month * 100 + now.date().day
+			post_time = post_time * 10000 + now.time().hour * 100 + now.time().minute
+			event_data['postTime'] = post_time
+			event_data['restriction'] = ""
+			event_data['secondaryTag'] = tmp['secondaryTag']
+
+			text = tmp['title'] + "\n" + tmp['location'] + "\n" + tmp['description']
+			event_data['primaryTag'] = KeywordsClassifier.classify(text)
+			
+			post_event = firebase.post('/events', event_data)
+			print 'posted:', event_data
 	print "DONE"
 	print "\n"
 	print "\n"
@@ -135,7 +136,7 @@ def removeRobotPostEvents(firebase_url, robot_name):
 	print "\n"
 
 
-def removeAllPostEvents():
+def removeAllPostEvents(firebase_url):
 	print 'fetching events from the database ... '
 	from firebase import firebase
 	firebase = firebase.FirebaseApplication(firebase_url, None)
