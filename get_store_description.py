@@ -1,3 +1,6 @@
+tags_list = ["Professional Events", "Social Events", "Performance Events",
+             "Political Events", "Seminars", "Athletics"]
+
 # Store events with their description into a file, 
 # as the data set to build our classifier. 
 if __name__ == '__main__':

@@ -54,9 +54,13 @@ def retieveEventsAtDate(date, url):
         url = item
         html = urllib.urlopen(url).read()
         soup = BeautifulSoup(html, "html.parser")
+        # the event information is reside here. 
         event = soup.select("div.box_header.vevent")[0]
 
+        # extract title from h1 tag's text
         title = event.h1.span.get_text().strip()
+
+        # extract time from h2 tag's abbr field
         time = ""
         for abbr in event.h2.findAll('abbr'):
             time += abbr.get_text().strip() + " "

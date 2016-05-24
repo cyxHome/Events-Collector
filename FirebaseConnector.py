@@ -43,7 +43,7 @@ def postEvents(robot_data, firebase_url, tags_list):
 	createUser(robot_data, firebase_url)
 	month = 5
 	nameSet = []
-	for day in range(8, 15):
+	for day in range(16, 17):
 		url = 'https://events.cornell.edu/calendar/day/2016/%s/%s' % (str(month), str(day)) 
 		date = 20160000 + month*100 + day 
 		retrievedData = EventsCollector.retieveEventsAtDate(date, url)

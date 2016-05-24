@@ -14,6 +14,8 @@ def classify(text):
 	import re
 	for i in range(6):
 		for j in range(len(keywords_list[i])):
+			# only match the <keyword>
+			# won't match the word that has <keyword> as a substring
 			if re.match("(^.*\s+"+keywords_list[i][j]+"[^a-z]+.*$)|(^\s*"+keywords_list[i][j]+"[^a-z]*$)|(^.*\s+"+keywords_list[i][j]+"[^a-z]*$)|(^\s*"+keywords_list[i][j]+"[^a-z]+.*$)", text.lower()) is not None:
 				return tags_list[i]
 	return tags_list[4]

@@ -11,14 +11,17 @@ def decodeAddressToCoordinates( address ):
         import urllib2
         import StringIO
         import json
+        # pass the address keyword as request parameters
         urlParams = {
                 'address': address,
                 'sensor': 'false',
         }  
+        # use the google map api to geocode the address. 
         url = 'http://maps.google.com/maps/api/geocode/json?' + urllib.urlencode( urlParams )
         response = urllib2.urlopen( url )
         responseBody = response.read()
 
+        # retrieve the latitude and longitude if succeed
         body = StringIO.StringIO( responseBody )
         result = json.load( body )
         if 'status' not in result or result['status'] != 'OK':
